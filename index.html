@@ -4,14 +4,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rossi vs Verdi — Classifica e Risultati</title>
+  <title>Flamengo VS Celtic</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
     :root { --bg:#0f172a; --panel:#111827; --text:#e5e7eb; --muted:#9ca3af; --accent:#22c55e; --danger:#ef4444; }
     html{ scroll-behavior:smooth }
     *{ box-sizing:border-box }
-    body{ margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Noto Sans','Helvetica Neue',Arial; background:var(--bg); color:var(--text)}
+    body{
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Noto Sans","Helvetica Neue",Arial;
+      background:var(--bg); color:var(--text)
+    }
     header{ padding:24px; border-bottom:1px solid #1f2937 }
     h1{ margin:0 0 6px; font-size:24px }
     .container{ max-width:1100px; margin:0 auto; padding:16px 24px 40px }
@@ -26,42 +30,62 @@
     .legend{ display:flex; gap:12px; align-items:center; color:var(--muted); font-size:12px }
     .flex{ display:flex; align-items:center; gap:8px }
     .nowrap{ white-space:nowrap }
+    .wrap-words{ word-break:break-word; overflow-wrap:anywhere; }
 
     /* Toggle bar */
-    .togglebar{ position:sticky; top:0; z-index:50; background:rgba(17,24,39,0.85); backdrop-filter:saturate(180%) blur(6px); border-bottom:1px solid #1f2937 }
+    .togglebar{
+      position:sticky; top:0; z-index:50;
+      background:rgba(17,24,39,0.85);
+      backdrop-filter:saturate(180%) blur(6px);
+      border-bottom:1px solid #1f2937
+    }
     .toggle{ max-width:1100px; margin:0 auto; padding:10px 24px; display:flex; gap:8px; align-items:center; justify-content:flex-start }
     .seg{ display:inline-flex; border:1px solid #1f2937; background:#0b1220; border-radius:10px; overflow:hidden }
-    .seg button{ appearance:none; border:0; color:#e5e7eb; background:transparent; padding:10px 14px; cursor:pointer; font-weight:600 }
+    .seg button{
+      appearance:none; border:0; color:#e5e7eb; background:transparent;
+      padding:10px 14px; cursor:pointer; font-weight:600
+    }
     .seg button.active{ background:#1f2937; color:#fff }
     .section-desc{ color:var(--muted); font-size:13px; margin-bottom:12px }
 
-    /* View switching (una sola vista per volta) */
+    /* Una sola vista per volta */
     body.view-partite #classifica{ display:none }
     body.view-classifica #partite{ display:none }
 
     /* Classifica centrata */
     #classifica .wrap{ max-width:900px; margin:0 auto }
 
-    /* Contenitore scorrevole orizzontale del grafico */
+    /* Chart scorribile orizzontale (classifica unica) */
     #classifica .chart-scroll{
       width:100%;
-      overflow-x:auto;
-      overflow-y:hidden;
-      -webkit-overflow-scrolling: touch;
-      border-radius: 10px;
-      border: 1px solid #1f2937;
-      background: #0b1220;
+      overflow-x:auto; overflow-y:hidden;
+      -webkit-overflow-scrolling:touch;
+      border-radius:10px; border:1px solid #1f2937; background:#0b1220;
     }
-    /* wrapper con larghezza dinamica impostata da JS */
     #classifica .chart-canvas-wrap{
-      height:360px;           /* altezza leggibile */
-      min-width: 600px;       /* non troppo stretto con pochi nomi */
+      height:360px;               /* altezza leggibile, non enorme */
+      min-width:600px;            /* evita eccessiva compressione con pochi nomi */
     }
-    /* il canvas riempie il wrapper */
     #classifica .chart-canvas-wrap > canvas{
-      display:block;
-      width:100% !important;
-      height:100% !important;
+      display:block; width:100% !important; height:100% !important;
+    }
+
+    /* Calendario (partite) responsive: tabella dentro wrapper scorrevole */
+    .table-scroll{
+      width:100%; max-width:100%;
+      overflow-x:auto; overflow-y:hidden;
+      -webkit-overflow-scrolling:touch;
+      border-radius:8px; border:1px solid #1f2937; background:#0b1220;
+    }
+    .table-scroll > table{ min-width:640px; }
+
+    /* Micro-tuning mobile */
+    @media (max-width: 600px){
+      .container{ padding: 12px 12px 28px; }
+      .card{ padding: 12px; }
+      th, td{ padding: 6px 8px; font-size: 13px; }
+      .badge-rossi, .badge-verdi{ font-size: 11px; padding: 2px 6px; }
+      .section-desc{ font-size: 12px; }
     }
   </style>
 </head>
@@ -70,8 +94,8 @@
 <body class="view-classifica">
   <header>
     <div class="container">
-      <h1>Rossi vs Verdi</h1>
-      <div class="subtitle">Risultati, giocatori e classifica (3 punti vittoria, 1 pareggio, 0 sconfitta)</div>
+      <h1>Flamengo VS Celtic</h1>
+      <div class="subtitle">Le punizioni le sbaglia solo chi ha paura di calciarle (o Massimo)</div>
     </div>
   </header>
 
@@ -88,19 +112,23 @@
     <!-- PARTITE -->
     <section class="card" id="partite" role="tabpanel" aria-labelledby="btnPartite">
       <h2 style="margin-top:0">Partite giocate</h2>
-      <p class="section-desc">Elenco delle partite (8 vs 8), con risultati e note.</p>
-      <table>
-        <thead>
-          <tr>
-            <th class="nowrap">Data</th>
-            <th>Rossi</th>
-            <th>Verdi</th>
-            <th>Risultato</th>
-            <th>Note</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-partite"></tbody>
-      </table>
+      <p class="section-desc">Elenco delle partite, con risultati e note.</p>
+
+      <!-- wrapper scorrevole: evita che la tabella esca dal riquadro su smartphone -->
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="nowrap">Data</th>
+              <th>Rossi</th>
+              <th>Verdi</th>
+              <th>Risultato</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-partite"></tbody>
+        </table>
+      </div>
     </section>
 
     <!-- CLASSIFICA -->
@@ -109,7 +137,6 @@
         <div class="flex" style="justify-content: space-between;">
           <h2 style="margin:0">Classifica</h2>
         </div>
-        <p class="section-desc">Punti per giocatore (grafico verticale, centrato; scorrimento orizzontale per vedere tutti).</p>
 
         <!-- viewport scorribile -->
         <div class="chart-scroll">
@@ -136,11 +163,11 @@
   </main>
 
   <script>
-    /* ========== DATA dal build Python ========== */
+    /* ========== DATA iniettati dal build Python ========== */
     const DATA = {"matches": [{"data": "2025-09-08", "gol_rossi": 5, "gol_verdi": 8, "giocatori_rossi": ["Edoardo", "Massimo", "Luca", "Emilio", "Marco Broker", "Pierpaolo", "Andrea", "Alberto"], "giocatori_verdi": ["Aldo", "Marco G.", "Gerry", "Messi", "Marco cugino", "Fabio", "Andrea Suola", "Vincenzo"], "note": "Partita 1 — flamengo vs celtic"}, {"data": "2025-09-15", "gol_rossi": 10, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Massimo", "Luca", "Davide", "Pierpaolo", "Marco cugino", "Vincenzo", "Gerry"], "giocatori_verdi": ["Aldo", "Marco G.", "Messi", "Marco Broker", "Emilio", "Andrea", "Lorenzo", "Alberto"], "note": "Partita 2 — flamengo vs celtic"}, {"data": "2025-09-22", "gol_rossi": 0, "gol_verdi": 6, "giocatori_rossi": ["Pierpaolo", "Luca", "Messi", "Davide", "Sandro", "Raffaele", "lorenzo", "Vincenzo", "Olindo"], "giocatori_verdi": ["Edoardo", "Marco G.", "Marco Broker", "Emilio", "Andrea", "Massimo", "Alberto", "Gerry", "Andrea Suola"], "note": "Partita 3 — flamengo vs celtic"}, {"data": "2025-09-29", "gol_rossi": 6, "gol_verdi": 8, "giocatori_rossi": ["Aldo", "Luca", "Marco Broker", "Emilio", "Raffaele", "Lorenzo", "Vincenzo", "Olindo"], "giocatori_verdi": ["Edoardo", "Andrea terzino", "Davide", "Andrea", "Massimo", "Alberto", "Gerry", "Andrea Suola"], "note": "Partita 4 — flamengo vs celtic"}, {"data": "2025-10-06", "gol_rossi": 6, "gol_verdi": 1, "giocatori_rossi": ["Massimo", "Marco Broker", "Emilio", "Davide", "Andrea Suola", "Andrea terzino", "Vincenzo", "Alberto"], "giocatori_verdi": ["Dimitri", "Andrea", "Luca", "Messi", "Olindo", "Lorenzo", "Raffaele", "Gerry"], "note": "Partita 5 — flamengo vs celtic"}, {"data": "2025-10-13", "gol_rossi": 1, "gol_verdi": 6, "giocatori_rossi": ["Dimitri", "Luca", "Emilio", "Marco Broker", "Andrea", "Andrea terzino", "Olindo", "Alberto"], "giocatori_verdi": ["Edoardo", "Messi", "Gerry", "Massimo", "Pierpaolo", "Andrea Suola", "Marco G.", "Peppe"], "note": "Partita 6 — flamengo vs celtic"}, {"data": "2025-10-20", "gol_rossi": 7, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Raffaele", "Marco G.", "Luca", "Olindo", "Andrea terzino", "Vincenzo", "Alberto"], "giocatori_verdi": ["Otello", "Massimo", "Marco Broker", "Emilio", "Andrea", "Lorenzo amico Andrea", "Andrea Suola", "Gerry"], "note": "Partita 7 — flamengo vs celtic"}, {"data": "2025-10-27", "gol_rossi": 7, "gol_verdi": 1, "giocatori_rossi": ["Edoardo", "Luca", "Sandro", "Massimo", "Marco G.", "Vincenzo", "Lorenzo", "Peppe"], "giocatori_verdi": ["Otello", "Messi", "Gerry", "Emilio", "Marco Broker", "Andrea Suola", "Andrea", "Alberto"], "note": "Partita 8 — flamengo vs celtic"}, {"data": "2025-11-03", "gol_rossi": 4, "gol_verdi": 6, "giocatori_rossi": ["Otello", "Luca", "Marco Broker", "Aldo", "Francesco (andrea)", "Vincenzo", "Lorenzo", "Gerry"], "giocatori_verdi": ["Edoardo", "Emilio", "Raffaele", "Massimo", "Andrea terzino", "Andrea Suola", "Andrea", "Olindo"], "note": "Partita 9 — flamengo vs celtic"}, {"data": "2025-11-10", "gol_rossi": 8, "gol_verdi": 5, "giocatori_rossi": ["Marco G.", "Marco Broker", "Emilio", "Massimo", "Andrea", "Andrea terzino", "Alberto", "Cristiano (amico Luca)"], "giocatori_verdi": ["Otello", "Raffaele", "Gerry", "Luca", "Peppe", "Luca (amico Peppe)", "Vincenzo", "Olindo"], "note": "Partita 10 — flamengo vs celtic"}, {"data": "2025-11-17", "gol_rossi": 4, "gol_verdi": 4, "giocatori_rossi": ["Alessio portiere", "Emilio", "Raffaele", "Andrea", "Andrea terzino", "Cristiano (amico Luca)", "Gerry", "Olindo"], "giocatori_verdi": ["Edoardo", "Massimo", "Luca", "Davide meccanico", "Marco Broker", "Marco G.", "Lorenzo", "Alberto"], "note": "Partita 11 — flamengo vs celtic"}, {"data": "2025-12-01", "gol_rossi": 3, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Marco G.", "Sandro", "Massimo", "Andrea suola", "Vincenzo", "Peppe", "Luca"], "giocatori_verdi": ["Sorin", "Raffaele", "Emilio", "Marco Broker", "Alberto", "Messi", "Andrea", "Cristiano"], "note": "Partita 13 — flamengo vs celtic"}, {"data": "2025-12-09", "gol_rossi": 3, "gol_verdi": 4, "giocatori_rossi": ["Otello", "Raffaele", "Davide meccanico", "Massimo", "Vincenzo", "Peppe", "Luca", "Pierpaolo"], "giocatori_verdi": ["Sorin", "Emilio", "Marco Broker", "Alberto", "Messi", "Fabio", "Andrea", "Andrea Suola"], "note": "Partita 14 — flamengo vs celtic"}, {"data": "2025-12-15", "gol_rossi": 8, "gol_verdi": 6, "giocatori_rossi": ["Edoardo", "Raffaele", "Emilio", "Cristiano", "Andrea Suola", "Vincenzo", "Peppe"], "giocatori_verdi": ["Sorin", "Massimo", "Marco Broker", "Andrea terzino", "Bogdan", "Luca di Peppe", "Francesco di Suola"], "note": "Partita 15 — flamengo vs celtic"}, {"data": "2025-12-22", "gol_rossi": 0, "gol_verdi": 0, "giocatori_rossi": ["Edoardo", "Massimo", "Davide meccanico", "Antonio (Davide Meccanico)", "Andrea terzino", "Luca", "Alberto", "Peppe"], "giocatori_verdi": ["Otello", "Gerry", "figlio di Gerry", "Vincenzo", "Figlio di Vincenzo", "Andrea Suola", "Francesco di Suola", "Luca Suola"], "note": "Partita 16 — flamengo vs celtic"}, {"data": "2026-01-12", "gol_rossi": 4, "gol_verdi": 2, "giocatori_rossi": ["Sorin", "Gerry", "Davide Meccanico", "Giordano Suola", "Luca Suola", "Andrea Suola", "Vincenzo", "Alberto"], "giocatori_verdi": ["Edoardo", "Massimo", "Emilio", "Andrea terzino", "Luca", "Cristiano", "Massimiliano di Cristiano", "Marco Davide Meccancio"], "note": "Partita 19 — flamengo vs celtic"}], "table": [{"giocatore": "Andrea Suola", "punti": 28, "P": 12, "V": 9, "N": 1, "S": 2}, {"giocatore": "Alberto", "punti": 26, "P": 14, "V": 8, "N": 2, "S": 4}, {"giocatore": "Edoardo", "punti": 26, "P": 13, "V": 8, "N": 2, "S": 3}, {"giocatore": "Massimo", "punti": 26, "P": 16, "V": 8, "N": 2, "S": 6}, {"giocatore": "Emilio", "punti": 22, "P": 15, "V": 7, "N": 1, "S": 7}, {"giocatore": "Vincenzo", "punti": 22, "P": 14, "V": 7, "N": 1, "S": 6}, {"giocatore": "Gerry", "punti": 20, "P": 13, "V": 6, "N": 2, "S": 5}, {"giocatore": "Andrea", "punti": 19, "P": 13, "V": 6, "N": 1, "S": 6}, {"giocatore": "Marco G.", "punti": 19, "P": 9, "V": 6, "N": 1, "S": 2}, {"giocatore": "Andrea terzino", "punti": 17, "P": 10, "V": 5, "N": 2, "S": 3}, {"giocatore": "Marco Broker", "punti": 16, "P": 14, "V": 5, "N": 1, "S": 8}, {"giocatore": "Raffaele", "punti": 13, "P": 10, "V": 4, "N": 1, "S": 5}, {"giocatore": "Messi", "punti": 12, "P": 8, "V": 4, "N": 0, "S": 4}, {"giocatore": "Luca", "punti": 11, "P": 15, "V": 3, "N": 2, "S": 10}, {"giocatore": "Peppe", "punti": 10, "P": 7, "V": 3, "N": 1, "S": 3}, {"giocatore": "Davide", "punti": 9, "P": 4, "V": 3, "N": 0, "S": 1}, {"giocatore": "Sorin", "punti": 9, "P": 4, "V": 3, "N": 0, "S": 1}, {"giocatore": "Olindo", "punti": 7, "P": 8, "V": 2, "N": 1, "S": 5}, {"giocatore": "Cristiano", "punti": 6, "P": 3, "V": 2, "N": 0, "S": 1}, {"giocatore": "Fabio", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "Marco cugino", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "Pierpaolo", "punti": 6, "P": 5, "V": 2, "N": 0, "S": 3}, {"giocatore": "Cristiano (amico Luca)", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Lorenzo", "punti": 4, "P": 6, "V": 1, "N": 1, "S": 4}, {"giocatore": "Luca Suola", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Aldo", "punti": 3, "P": 4, "V": 1, "N": 0, "S": 3}, {"giocatore": "Davide Meccanico", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Giordano Suola", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Sandro", "punti": 3, "P": 3, "V": 1, "N": 0, "S": 2}, {"giocatore": "Davide meccanico", "punti": 2, "P": 3, "V": 0, "N": 2, "S": 1}, {"giocatore": "Alessio portiere", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Antonio (Davide Meccanico)", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "figlio di Gerry", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Figlio di Vincenzo", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Francesco di Suola", "punti": 1, "P": 2, "V": 0, "N": 1, "S": 1}, {"giocatore": "Otello", "punti": 1, "P": 6, "V": 0, "N": 1, "S": 5}]};
 
     /* ========== utilità DOM ========== */
-    function el(tag, attrs={}, children=[]) {
+    function el(tag, attrs={}, children=[]){
       const e = document.createElement(tag);
       Object.entries(attrs).forEach(([k,v])=>{
         if(k==='class') e.className=v;
@@ -151,15 +178,16 @@
       return e;
     }
 
-    /* label su 2 righe (spezzata sul primo spazio) per migliorare la leggibilità */
+    /* Etichette su 2 righe (spezzate al primo spazio) per leggibilità */
     function wrapLabel(name){
       if(!name) return name;
-      const i = String(name).indexOf(' ');
-      if(i>0) return [name.slice(0,i), name.slice(i+1)];
-      return name;
+      const s = String(name);
+      const i = s.indexOf(' ');
+      if(i>0) return [s.slice(0,i), s.slice(i+1)];
+      return s;
     }
 
-    /* ========== RENDER PARTITE ========== */
+    /* ========== PARTITE (tabella responsive) ========== */
     function renderPartite(matches){
       const tbody = document.getElementById('tbody-partite');
       tbody.innerHTML = '';
@@ -167,8 +195,15 @@
         const res = `${m.gol_rossi} - ${m.gol_verdi}`;
         const tr = el('tr',{},[
           el('td',{class:'nowrap'},[document.createTextNode(m.data)]),
-          el('td',{html:`<span class="badge-rossi">Rossi</span><br>${m.giocatori_rossi.join(', ')}`}),
-          el('td',{html:`<span class="badge-verdi">Verdi</span><br>${m.giocatori_verdi.join(', ')}`}),
+
+          // Nomi wrappabili
+          el('td',{class:'wrap-words', html:
+            `<span class="badge-rossi">Rossi</span><br><span class="players-list">${m.giocatori_rossi.join(', ')}</span>`}
+          ),
+          el('td',{class:'wrap-words', html:
+            `<span class="badge-verdi">Verdi</span><br><span class="players-list">${m.giocatori_verdi.join(', ')}</span>`}
+          ),
+
           el('td',{html:`<strong>${res}</strong>`}),
           el('td',{class:'note'},[document.createTextNode(m.note || '')]),
         ]);
@@ -176,7 +211,7 @@
       });
     }
 
-    /* ========== RENDER CLASSIFICA (tabellina) ========== */
+    /* ========== CLASSIFICA (tabellina) ========== */
     function renderClassifica(table){
       const tbody = document.getElementById('tbody-classifica');
       tbody.innerHTML = '';
@@ -215,7 +250,7 @@
       }
     };
 
-    /* ========== RENDER GRAFICO CLASSIFICA (SCORRIBILE) ========== */
+    /* ========== GRAFICO CLASSIFICA (scorribile orizzontalmente) ========== */
     function renderChart(table){
       const labels = table.map(r => r.giocatore);
       const points = table.map(r => r.punti);
@@ -223,9 +258,9 @@
       const canvas = document.getElementById('chart');
       const ctx = canvas.getContext('2d');
 
-      // Larghezza per etichetta in base a media lunghezza nomi + quantità
+      // Larghezza per etichetta in base a lunghezza media dei nomi + quantità
       const avgNameLen = labels.reduce((s, n) => s + String(n).length, 0) / Math.max(1, labels.length);
-      const basePerLabel = 70;                               // base
+      const basePerLabel = 70;
       const extraByLen = Math.min(40, Math.max(0, avgNameLen - 10) * 2);
       const extraByCount = labels.length > 20 ? 20 : (labels.length > 12 ? 10 : 0);
       const perLabelWidth = basePerLabel + extraByLen + extraByCount; // ~70..130+ px
@@ -234,7 +269,7 @@
       const totalWidth = Math.max(600, Math.round(perLabelWidth * labels.length));
       wrap.style.width = totalWidth + 'px';
 
-      // Evidenzia i leader con oro + coroncina
+      // Evidenzia leader (oro + coroncina)
       const maxPts = Math.max(...points);
       const leaders = points.reduce((acc, p, i) => { if (p === maxPts) acc.push(i); return acc; }, []);
       const GOLD_BG = 'rgba(255,215,0,0.85)';  // #FFD700
@@ -244,6 +279,7 @@
       const bg = points.map(p => p === maxPts ? GOLD_BG : GREEN_BG);
       const br = points.map(p => p === maxPts ? GOLD_BR : GREEN_BR);
 
+      // Pulisci grafico precedente
       if (window.__rvvChart) { window.__rvvChart.destroy(); }
 
       window.__rvvChart = new Chart(ctx, {
@@ -264,7 +300,7 @@
           plugins: {
             legend: { display: false },
             tooltip: { enabled: true },
-            crown: { leaders },         // passa indici leader al plugin coroncina
+            crown: { leaders },         // passa i leader al plugin coroncina
           },
           scales: {
             x: {
@@ -313,7 +349,7 @@
     }
     bPartite.addEventListener('click', ()=> setView('partite'));
     bClassifica.addEventListener('click', ()=> setView('classifica'));
-    // Default già in body: view-classifica
+    // Default già su "classifica" (classe del <body>)
   </script>
 </body>
 </html>
