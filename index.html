@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -25,6 +26,7 @@
     .legend{ display:flex; gap:12px; align-items:center; color:var(--muted); font-size:12px }
     .flex{ display:flex; align-items:center; gap:8px }
     .nowrap{ white-space:nowrap }
+
     /* Toggle bar */
     .togglebar{ position:sticky; top:0; z-index:50; background:rgba(17,24,39,0.85); backdrop-filter:saturate(180%) blur(6px); border-bottom:1px solid #1f2937 }
     .toggle{ max-width:1100px; margin:0 auto; padding:10px 24px; display:flex; gap:8px; align-items:center; justify-content:flex-start }
@@ -32,15 +34,40 @@
     .seg button{ appearance:none; border:0; color:#e5e7eb; background:transparent; padding:10px 14px; cursor:pointer; font-weight:600 }
     .seg button.active{ background:#1f2937; color:#fff }
     .section-desc{ color:var(--muted); font-size:13px; margin-bottom:12px }
-    /* View switching */
+
+    /* View switching (una sola vista per volta) */
     body.view-partite #classifica{ display:none }
     body.view-classifica #partite{ display:none }
-    /* Center classifica */
+
+    /* Classifica centrata */
     #classifica .wrap{ max-width:900px; margin:0 auto }
-    #classifica canvas{ width:100%; display:block; }
+
+    /* Contenitore scorrevole orizzontale del grafico */
+    #classifica .chart-scroll{
+      width:100%;
+      overflow-x:auto;
+      overflow-y:hidden;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      background: #0b1220;
+    }
+    /* wrapper con larghezza dinamica impostata da JS */
+    #classifica .chart-canvas-wrap{
+      height:360px;           /* altezza leggibile */
+      min-width: 600px;       /* non troppo stretto con pochi nomi */
+    }
+    /* il canvas riempie il wrapper */
+    #classifica .chart-canvas-wrap > canvas{
+      display:block;
+      width:100% !important;
+      height:100% !important;
+    }
   </style>
 </head>
-<body class="view-partite">
+
+<!-- Default: CLASSIFICA -->
+<body class="view-classifica">
   <header>
     <div class="container">
       <h1>Rossi vs Verdi</h1>
@@ -51,16 +78,17 @@
   <div class="togglebar">
     <div class="toggle">
       <div class="seg" role="tablist" aria-label="Selettore vista">
-        <button id="btnPartite" role="tab" aria-selected="true" class="active">Partite</button>
-        <button id="btnClassifica" role="tab" aria-selected="false">Classifica</button>
+        <button id="btnPartite" role="tab" aria-selected="false">Partite</button>
+        <button id="btnClassifica" role="tab" aria-selected="true" class="active">Classifica</button>
       </div>
     </div>
   </div>
 
   <main class="container">
+    <!-- PARTITE -->
     <section class="card" id="partite" role="tabpanel" aria-labelledby="btnPartite">
       <h2 style="margin-top:0">Partite giocate</h2>
-      <p class="section-desc">Elenco delle partite (8 Rossi vs 8 Verdi), con risultati e note.</p>
+      <p class="section-desc">Elenco delle partite (8 vs 8), con risultati e note.</p>
       <table>
         <thead>
           <tr>
@@ -75,14 +103,21 @@
       </table>
     </section>
 
+    <!-- CLASSIFICA -->
     <section class="card" id="classifica" role="tabpanel" aria-labelledby="btnClassifica">
       <div class="wrap">
         <div class="flex" style="justify-content: space-between;">
           <h2 style="margin:0">Classifica</h2>
-          <div class="legend"><span class="badge-rossi">R</span> <span class="badge-verdi">V</span></div>
         </div>
-        <p class="section-desc">Punti per giocatore (3 vittoria, 1 pareggio, 0 sconfitta). Fino a 30+ nomi, grafico orizzontale per leggibilità.</p>
-        <canvas id="chart"></canvas>
+        <p class="section-desc">Punti per giocatore (grafico verticale, centrato; scorrimento orizzontale per vedere tutti).</p>
+
+        <!-- viewport scorribile -->
+        <div class="chart-scroll">
+          <div class="chart-canvas-wrap" id="chartWrap">
+            <canvas id="chart"></canvas>
+          </div>
+        </div>
+
         <table style="margin-top:12px">
           <thead>
             <tr>
@@ -101,66 +136,165 @@
   </main>
 
   <script>
-    const DATA = {"matches": [{"data": "2026-01-08", "gol_rossi": 3, "gol_verdi": 1, "giocatori_rossi": ["Mario", "Luca", "Gianni", "Andrea", "PaoloR", "EnricoR", "FabioR", "MarcoR"], "giocatori_verdi": ["Paolo", "Marco", "Enrico", "Daniele", "Riccardo", "Stefano", "Alberto", "Giorgio"], "note": "Esordio stagione"}, {"data": "2026-01-10", "gol_rossi": 2, "gol_verdi": 2, "giocatori_rossi": ["Anna", "Luca", "Paolo", "Sara", "Chiara", "Matteo", "Luigi", "Franco"], "giocatori_verdi": ["Gianni", "Marco", "Enrico", "Piero", "Davide", "Simone", "Mauro", "Carlo"], "note": "Partita tirata"}, {"data": "2026-01-12", "gol_rossi": 0, "gol_verdi": 1, "giocatori_rossi": ["Mario", "Anna", "Enrico", "Laura", "Elisa", "Roberto", "Dario", "Tommaso"], "giocatori_verdi": ["Paolo", "Luca", "Gianni", "Nicola", "Valerio", "Cristian", "Gabriele", "Pietro"], "note": "Pioggia"}], "table": [{"giocatore": "Gianni", "punti": 7, "P": 3, "V": 2, "N": 1, "S": 0}, {"giocatore": "Luca", "punti": 7, "P": 3, "V": 2, "N": 1, "S": 0}, {"giocatore": "Paolo", "punti": 4, "P": 3, "V": 1, "N": 1, "S": 1}, {"giocatore": "Andrea", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Cristian", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "EnricoR", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "FabioR", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Gabriele", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "MarcoR", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Mario", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "Nicola", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "PaoloR", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Pietro", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Valerio", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Anna", "punti": 1, "P": 2, "V": 0, "N": 1, "S": 1}, {"giocatore": "Carlo", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Chiara", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Davide", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Enrico", "punti": 1, "P": 3, "V": 0, "N": 1, "S": 2}, {"giocatore": "Franco", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Luigi", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Marco", "punti": 1, "P": 2, "V": 0, "N": 1, "S": 1}, {"giocatore": "Matteo", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Mauro", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Piero", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Sara", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Simone", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}]};
-    function el(tag, attrs={}, children=[]) { const e=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>{ if(k==='class') e.className=v; else if(k==='html') e.innerHTML=v; else e.setAttribute(k,v); }); children.forEach(c=>e.appendChild(c)); return e; }
+    /* ========== DATA dal build Python ========== */
+    const DATA = {"matches": [{"data": "2025-09-08", "gol_rossi": 5, "gol_verdi": 8, "giocatori_rossi": ["Edoardo", "Massimo", "Luca", "Emilio", "Marco Broker", "Pierpaolo", "Andrea", "Alberto"], "giocatori_verdi": ["Aldo", "Marco G.", "Gerry", "Messi", "Marco cugino", "Fabio", "Andrea Suola", "Vincenzo"], "note": "Partita 1 — flamengo vs celtic"}, {"data": "2025-09-15", "gol_rossi": 10, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Massimo", "Luca", "Davide", "Pierpaolo", "Marco cugino", "Vincenzo", "Gerry"], "giocatori_verdi": ["Aldo", "Marco G.", "Messi", "Marco Broker", "Emilio", "Andrea", "Lorenzo", "Alberto"], "note": "Partita 2 — flamengo vs celtic"}, {"data": "2025-09-22", "gol_rossi": 0, "gol_verdi": 6, "giocatori_rossi": ["Pierpaolo", "Luca", "Messi", "Davide", "Sandro", "Raffaele", "lorenzo", "Vincenzo", "Olindo"], "giocatori_verdi": ["Edoardo", "Marco G.", "Marco Broker", "Emilio", "Andrea", "Massimo", "Alberto", "Gerry", "Andrea Suola"], "note": "Partita 3 — flamengo vs celtic"}, {"data": "2025-09-29", "gol_rossi": 6, "gol_verdi": 8, "giocatori_rossi": ["Aldo", "Luca", "Marco Broker", "Emilio", "Raffaele", "Lorenzo", "Vincenzo", "Olindo"], "giocatori_verdi": ["Edoardo", "Andrea terzino", "Davide", "Andrea", "Massimo", "Alberto", "Gerry", "Andrea Suola"], "note": "Partita 4 — flamengo vs celtic"}, {"data": "2025-10-06", "gol_rossi": 6, "gol_verdi": 1, "giocatori_rossi": ["Massimo", "Marco Broker", "Emilio", "Davide", "Andrea Suola", "Andrea terzino", "Vincenzo", "Alberto"], "giocatori_verdi": ["Dimitri", "Andrea", "Luca", "Messi", "Olindo", "Lorenzo", "Raffaele", "Gerry"], "note": "Partita 5 — flamengo vs celtic"}, {"data": "2025-10-13", "gol_rossi": 1, "gol_verdi": 6, "giocatori_rossi": ["Dimitri", "Luca", "Emilio", "Marco Broker", "Andrea", "Andrea terzino", "Olindo", "Alberto"], "giocatori_verdi": ["Edoardo", "Messi", "Gerry", "Massimo", "Pierpaolo", "Andrea Suola", "Marco G.", "Peppe"], "note": "Partita 6 — flamengo vs celtic"}, {"data": "2025-10-20", "gol_rossi": 7, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Raffaele", "Marco G.", "Luca", "Olindo", "Andrea terzino", "Vincenzo", "Alberto"], "giocatori_verdi": ["Otello", "Massimo", "Marco Broker", "Emilio", "Andrea", "Lorenzo amico Andrea", "Andrea Suola", "Gerry"], "note": "Partita 7 — flamengo vs celtic"}, {"data": "2025-10-27", "gol_rossi": 7, "gol_verdi": 1, "giocatori_rossi": ["Edoardo", "Luca", "Sandro", "Massimo", "Marco G.", "Vincenzo", "Lorenzo", "Peppe"], "giocatori_verdi": ["Otello", "Messi", "Gerry", "Emilio", "Marco Broker", "Andrea Suola", "Andrea", "Alberto"], "note": "Partita 8 — flamengo vs celtic"}, {"data": "2025-11-03", "gol_rossi": 4, "gol_verdi": 6, "giocatori_rossi": ["Otello", "Luca", "Marco Broker", "Aldo", "Francesco (andrea)", "Vincenzo", "Lorenzo", "Gerry"], "giocatori_verdi": ["Edoardo", "Emilio", "Raffaele", "Massimo", "Andrea terzino", "Andrea Suola", "Andrea", "Olindo"], "note": "Partita 9 — flamengo vs celtic"}, {"data": "2025-11-10", "gol_rossi": 8, "gol_verdi": 5, "giocatori_rossi": ["Marco G.", "Marco Broker", "Emilio", "Massimo", "Andrea", "Andrea terzino", "Alberto", "Cristiano (amico Luca)"], "giocatori_verdi": ["Otello", "Raffaele", "Gerry", "Luca", "Peppe", "Luca (amico Peppe)", "Vincenzo", "Olindo"], "note": "Partita 10 — flamengo vs celtic"}, {"data": "2025-11-17", "gol_rossi": 4, "gol_verdi": 4, "giocatori_rossi": ["Alessio portiere", "Emilio", "Raffaele", "Andrea", "Andrea terzino", "Cristiano (amico Luca)", "Gerry", "Olindo"], "giocatori_verdi": ["Edoardo", "Massimo", "Luca", "Davide meccanico", "Marco Broker", "Marco G.", "Lorenzo", "Alberto"], "note": "Partita 11 — flamengo vs celtic"}, {"data": "2025-12-01", "gol_rossi": 3, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Marco G.", "Sandro", "Massimo", "Andrea suola", "Vincenzo", "Peppe", "Luca"], "giocatori_verdi": ["Sorin", "Raffaele", "Emilio", "Marco Broker", "Alberto", "Messi", "Andrea", "Cristiano"], "note": "Partita 13 — flamengo vs celtic"}, {"data": "2025-12-09", "gol_rossi": 3, "gol_verdi": 4, "giocatori_rossi": ["Otello", "Raffaele", "Davide meccanico", "Massimo", "Vincenzo", "Peppe", "Luca", "Pierpaolo"], "giocatori_verdi": ["Sorin", "Emilio", "Marco Broker", "Alberto", "Messi", "Fabio", "Andrea", "Andrea Suola"], "note": "Partita 14 — flamengo vs celtic"}, {"data": "2025-12-15", "gol_rossi": 8, "gol_verdi": 6, "giocatori_rossi": ["Edoardo", "Raffaele", "Emilio", "Cristiano", "Andrea Suola", "Vincenzo", "Peppe"], "giocatori_verdi": ["Sorin", "Massimo", "Marco Broker", "Andrea terzino", "Bogdan", "Luca di Peppe", "Francesco di Suola"], "note": "Partita 15 — flamengo vs celtic"}, {"data": "2025-12-22", "gol_rossi": 0, "gol_verdi": 0, "giocatori_rossi": ["Edoardo", "Massimo", "Davide meccanico", "Antonio (Davide Meccanico)", "Andrea terzino", "Luca", "Alberto", "Peppe"], "giocatori_verdi": ["Otello", "Gerry", "figlio di Gerry", "Vincenzo", "Figlio di Vincenzo", "Andrea Suola", "Francesco di Suola", "Luca Suola"], "note": "Partita 16 — flamengo vs celtic"}, {"data": "2026-01-12", "gol_rossi": 4, "gol_verdi": 2, "giocatori_rossi": ["Sorin", "Gerry", "Davide Meccanico", "Giordano Suola", "Luca Suola", "Andrea Suola", "Vincenzo", "Alberto"], "giocatori_verdi": ["Edoardo", "Massimo", "Emilio", "Andrea terzino", "Luca", "Cristiano", "Massimiliano di Cristiano", "Marco Davide Meccancio"], "note": "Partita 19 — flamengo vs celtic"}], "table": [{"giocatore": "Andrea Suola", "punti": 28, "P": 12, "V": 9, "N": 1, "S": 2}, {"giocatore": "Alberto", "punti": 26, "P": 14, "V": 8, "N": 2, "S": 4}, {"giocatore": "Edoardo", "punti": 26, "P": 13, "V": 8, "N": 2, "S": 3}, {"giocatore": "Massimo", "punti": 26, "P": 16, "V": 8, "N": 2, "S": 6}, {"giocatore": "Emilio", "punti": 22, "P": 15, "V": 7, "N": 1, "S": 7}, {"giocatore": "Vincenzo", "punti": 22, "P": 14, "V": 7, "N": 1, "S": 6}, {"giocatore": "Gerry", "punti": 20, "P": 13, "V": 6, "N": 2, "S": 5}, {"giocatore": "Andrea", "punti": 19, "P": 13, "V": 6, "N": 1, "S": 6}, {"giocatore": "Marco G.", "punti": 19, "P": 9, "V": 6, "N": 1, "S": 2}, {"giocatore": "Andrea terzino", "punti": 17, "P": 10, "V": 5, "N": 2, "S": 3}, {"giocatore": "Marco Broker", "punti": 16, "P": 14, "V": 5, "N": 1, "S": 8}, {"giocatore": "Raffaele", "punti": 13, "P": 10, "V": 4, "N": 1, "S": 5}, {"giocatore": "Messi", "punti": 12, "P": 8, "V": 4, "N": 0, "S": 4}, {"giocatore": "Luca", "punti": 11, "P": 15, "V": 3, "N": 2, "S": 10}, {"giocatore": "Peppe", "punti": 10, "P": 7, "V": 3, "N": 1, "S": 3}, {"giocatore": "Davide", "punti": 9, "P": 4, "V": 3, "N": 0, "S": 1}, {"giocatore": "Sorin", "punti": 9, "P": 4, "V": 3, "N": 0, "S": 1}, {"giocatore": "Olindo", "punti": 7, "P": 8, "V": 2, "N": 1, "S": 5}, {"giocatore": "Cristiano", "punti": 6, "P": 3, "V": 2, "N": 0, "S": 1}, {"giocatore": "Fabio", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "Marco cugino", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "Pierpaolo", "punti": 6, "P": 5, "V": 2, "N": 0, "S": 3}, {"giocatore": "Cristiano (amico Luca)", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Lorenzo", "punti": 4, "P": 6, "V": 1, "N": 1, "S": 4}, {"giocatore": "Luca Suola", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Aldo", "punti": 3, "P": 4, "V": 1, "N": 0, "S": 3}, {"giocatore": "Davide Meccanico", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Giordano Suola", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Sandro", "punti": 3, "P": 3, "V": 1, "N": 0, "S": 2}, {"giocatore": "Davide meccanico", "punti": 2, "P": 3, "V": 0, "N": 2, "S": 1}, {"giocatore": "Alessio portiere", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Antonio (Davide Meccanico)", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "figlio di Gerry", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Figlio di Vincenzo", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Francesco di Suola", "punti": 1, "P": 2, "V": 0, "N": 1, "S": 1}, {"giocatore": "Otello", "punti": 1, "P": 6, "V": 0, "N": 1, "S": 5}]};
 
-    function renderPartite(matches){ const tbody=document.getElementById('tbody-partite'); tbody.innerHTML=''; matches.forEach(m=>{ const res=`${m.gol_rossi} - ${m.gol_verdi}`; const tr=el('tr',{},[ el('td',{class:'nowrap'},[document.createTextNode(m.data)]), el('td',{html:`<span class="badge-rossi">Rossi</span><br>${m.giocatori_rossi.join(', ')}`}), el('td',{html:`<span class="badge-verdi">Verdi</span><br>${m.giocatori_verdi.join(', ')}`}), el('td',{html:`<strong>${res}</strong>`}), el('td',{class:'note'},[document.createTextNode(m.note||'')]) ]); tbody.appendChild(tr); }); }
+    /* ========== utilità DOM ========== */
+    function el(tag, attrs={}, children=[]) {
+      const e = document.createElement(tag);
+      Object.entries(attrs).forEach(([k,v])=>{
+        if(k==='class') e.className=v;
+        else if(k==='html') e.innerHTML=v;
+        else e.setAttribute(k,v);
+      });
+      children.forEach(c=>e.appendChild(c));
+      return e;
+    }
 
-    function renderClassifica(table){ const tbody=document.getElementById('tbody-classifica'); tbody.innerHTML=''; table.forEach(r=>{ const tr=el('tr',{},[ el('td',{},[document.createTextNode(r.giocatore)]), el('td',{},[document.createTextNode(r.punti)]), el('td',{},[document.createTextNode(r.P)]), el('td',{},[document.createTextNode(r.V)]), el('td',{},[document.createTextNode(r.N)]), el('td',{},[document.createTextNode(r.S)]) ]); tbody.appendChild(tr); }); }
+    /* label su 2 righe (spezzata sul primo spazio) per migliorare la leggibilità */
+    function wrapLabel(name){
+      if(!name) return name;
+      const i = String(name).indexOf(' ');
+      if(i>0) return [name.slice(0,i), name.slice(i+1)];
+      return name;
+    }
 
+    /* ========== RENDER PARTITE ========== */
+    function renderPartite(matches){
+      const tbody = document.getElementById('tbody-partite');
+      tbody.innerHTML = '';
+      matches.forEach(m => {
+        const res = `${m.gol_rossi} - ${m.gol_verdi}`;
+        const tr = el('tr',{},[
+          el('td',{class:'nowrap'},[document.createTextNode(m.data)]),
+          el('td',{html:`<span class="badge-rossi">Rossi</span><br>${m.giocatori_rossi.join(', ')}`}),
+          el('td',{html:`<span class="badge-verdi">Verdi</span><br>${m.giocatori_verdi.join(', ')}`}),
+          el('td',{html:`<strong>${res}</strong>`}),
+          el('td',{class:'note'},[document.createTextNode(m.note || '')]),
+        ]);
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ========== RENDER CLASSIFICA (tabellina) ========== */
+    function renderClassifica(table){
+      const tbody = document.getElementById('tbody-classifica');
+      tbody.innerHTML = '';
+      table.forEach(r => {
+        const tr = el('tr',{},[
+          el('td',{},[document.createTextNode(r.giocatore)]),
+          el('td',{},[document.createTextNode(r.punti)]),
+          el('td',{},[document.createTextNode(r.P)]),
+          el('td',{},[document.createTextNode(r.V)]),
+          el('td',{},[document.createTextNode(r.N)]),
+          el('td',{},[document.createTextNode(r.S)]),
+        ]);
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ========== Plugin CORONCINA sui leader ========== */
+    const crownPlugin = {
+      id: 'crown',
+      afterDatasetsDraw(chart) {
+        const leaders = (chart.options.plugins && chart.options.plugins.crown && chart.options.plugins.crown.leaders) || [];
+        if (!leaders.length) return;
+        const { ctx } = chart;
+        const meta = chart.getDatasetMeta(0);
+        leaders.forEach(idx => {
+          const bar = meta.data[idx];
+          if (!bar) return;
+          const { x, y } = bar.getProps(['x','y'], true);
+          ctx.save();
+          ctx.font = '16px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText('👑', x, y - 6);
+          ctx.restore();
+        });
+      }
+    };
+
+    /* ========== RENDER GRAFICO CLASSIFICA (SCORRIBILE) ========== */
     function renderChart(table){
       const labels = table.map(r => r.giocatore);
-      const data = table.map(r => r.punti);
+      const points = table.map(r => r.punti);
+      const wrap = document.getElementById('chartWrap');
       const canvas = document.getElementById('chart');
-      // dynamic height: ~22px per riga + padding (works fine up to 30-40 nomi)
-      const h = Math.max(260, 22 * labels.length + 80);
-      canvas.height = h;
       const ctx = canvas.getContext('2d');
-      new Chart(ctx, {
+
+      // Larghezza per etichetta in base a media lunghezza nomi + quantità
+      const avgNameLen = labels.reduce((s, n) => s + String(n).length, 0) / Math.max(1, labels.length);
+      const basePerLabel = 70;                               // base
+      const extraByLen = Math.min(40, Math.max(0, avgNameLen - 10) * 2);
+      const extraByCount = labels.length > 20 ? 20 : (labels.length > 12 ? 10 : 0);
+      const perLabelWidth = basePerLabel + extraByLen + extraByCount; // ~70..130+ px
+
+      // Larghezza totale scorribile
+      const totalWidth = Math.max(600, Math.round(perLabelWidth * labels.length));
+      wrap.style.width = totalWidth + 'px';
+
+      // Evidenzia i leader con oro + coroncina
+      const maxPts = Math.max(...points);
+      const leaders = points.reduce((acc, p, i) => { if (p === maxPts) acc.push(i); return acc; }, []);
+      const GOLD_BG = 'rgba(255,215,0,0.85)';  // #FFD700
+      const GOLD_BR = 'rgba(255,215,0,1)';
+      const GREEN_BG = 'rgba(34,197,94,0.6)';
+      const GREEN_BR = 'rgba(34,197,94,1)';
+      const bg = points.map(p => p === maxPts ? GOLD_BG : GREEN_BG);
+      const br = points.map(p => p === maxPts ? GOLD_BR : GREEN_BR);
+
+      if (window.__rvvChart) { window.__rvvChart.destroy(); }
+
+      window.__rvvChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels,
+          labels: labels.map(wrapLabel),
           datasets: [{
             label: 'Punti',
-            data,
-            backgroundColor: 'rgba(34,197,94,0.6)',
-            borderColor: 'rgba(34,197,94,1)',
+            data: points,
+            backgroundColor: bg,
+            borderColor: br,
             borderWidth: 1.5,
           }],
         },
         options: {
-          indexAxis: 'y', // orizzontale per leggere bene tanti nomi
           maintainAspectRatio: false,
+          animation: false,
           plugins: {
             legend: { display: false },
             tooltip: { enabled: true },
+            crown: { leaders },         // passa indici leader al plugin coroncina
           },
-          layout: { padding: 6 },
           scales: {
             x: {
+              ticks: {
+                color: '#e5e7eb',
+                maxRotation: 45,
+                minRotation: 20,
+                autoSkip: false,        // mostra TUTTI i nomi
+                font: { size: labels.length > 24 ? 10 : 12 },
+              },
+              grid: { color: '#1f2937' },
+            },
+            y: {
               beginAtZero: true,
               ticks: { color: '#e5e7eb' },
               grid: { color: '#1f2937' },
             },
-            y: {
-              ticks: {
-                color: '#e5e7eb',
-                // riduci font se tanti nomi
-                font: { size: labels.length > 22 ? 10 : (labels.length > 16 ? 11 : 12) },
-              },
-              grid: { color: '#1f2937' },
-            },
           },
+          layout: { padding: 6 },
         },
+        plugins: [crownPlugin],
       });
     }
 
-    // Initial render
+    /* ========== INIT ========== */
     renderPartite(DATA.matches);
     renderClassifica(DATA.table);
     renderChart(DATA.table);
 
-    // Toggle logic: mostra solo una vista alla volta
+    // Toggle viste
     const body = document.body;
     const bPartite = document.getElementById('btnPartite');
     const bClassifica = document.getElementById('btnClassifica');
@@ -179,6 +313,7 @@
     }
     bPartite.addEventListener('click', ()=> setView('partite'));
     bClassifica.addEventListener('click', ()=> setView('classifica'));
+    // Default già in body: view-classifica
   </script>
 </body>
 </html>
