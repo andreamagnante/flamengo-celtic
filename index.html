@@ -33,20 +33,20 @@
     .wrap-words{ word-break:break-word; overflow-wrap:anywhere; }
 
     /* Badge squadra nelle partite */
-    .badge-rossi,
-    .badge-verdi{
+    .badge-flamengo,
+    .badge-celtic{
       padding:2px 8px; border-radius:999px; font-size:12px; display:inline-block;
       border:1px solid transparent; transition:all .15s ease;
     }
-    .badge-rossi{ color:#fecaca; background:#7f1d1d; }
-    .badge-verdi{ color:#dcfce7; background:#064e3b; }
+    .badge-flamengo{ color:#fecaca; background:#7f1d1d; }
+    .badge-celtic{ color:#dcfce7; background:#064e3b; }
 
     /* Enfasi vincitore: più lungo (padding orizzontale maggiore), bold, bordo/alone */
-    .badge-rossi.winner{
+    .badge-flamengo.winner{
       font-weight:800; padding:4px 80px;
       border-color:#ef4444; box-shadow:0 0 0 2px #ef4444 inset, 0 0 6px rgba(239,68,68,0.35);
     }
-    .badge-verdi.winner{
+    .badge-celtic.winner{
       font-weight:800; padding:4px 80px;
       border-color:#22c55e; box-shadow:0 0 0 2px #22c55e inset, 0 0 6px rgba(34,197,94,0.30);
     }
@@ -64,8 +64,8 @@
     .player-chip .name{ font-weight:400; color: var(--text); }
 
     /* Capitani per squadra (solo il nome, non la virgola) */
-    .captain-rossi .name{ color: var(--captain-red); font-weight:700; }
-    .captain-verdi .name{ color: var(--captain-green); font-weight:700; }
+    .captain-flamengo .name{ color: var(--captain-red); font-weight:700; }
+    .captain-celtic .name{ color: var(--captain-green); font-weight:700; }
 
     /* Badge "C" accanto al nome del capitano (stesso colore del team) */
     .badge-c{
@@ -80,8 +80,8 @@
       vertical-align:baseline;
       font-weight:700;
     }
-    .captain-rossi .badge-c{ color: var(--captain-red); }
-    .captain-verdi .badge-c{ color: var(--captain-green); }
+    .captain-flamengo .badge-c{ color: var(--captain-red); }
+    .captain-celtic .badge-c{ color: var(--captain-green); }
 
     /* Toggle bar */
     .togglebar{
@@ -143,12 +143,24 @@
     }
     #riepilogo-partite canvas{ width:100% !important; height:100% !important; display:block; }
 
+    /* Ordinamento tabella classifica (UI) */
+    .sort-btn{
+      appearance:none; border:0; background:transparent; color:var(--muted);
+      font-weight:600; cursor:pointer; padding:0; display:inline-flex; align-items:center; gap:6px;
+    }
+    .sort-btn .arrow{ display:inline-block; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; }
+    .sort-btn.sort-asc .arrow{ border-bottom:6px solid var(--muted); }
+    .sort-btn.sort-desc .arrow{ border-top:6px solid var(--muted); }
+    th.active-sort{ color:#fff; }
+    th.active-sort .sort-btn{ color:#fff; }
+    th.active-sort .sort-btn .arrow{ border-top-color:#fff; border-bottom-color:#fff; }
+
     /* Mobile */
     @media (max-width: 600px){
       .container{ padding: 12px 12px 28px; }
       .card{ padding: 12px; }
       th, td{ padding: 6px 8px; font-size: 13px; }
-      .badge-rossi, .badge-verdi{ font-size: 11px; padding: 2px 6px; }
+      .badge-flamengo, .badge-celtic{ font-size: 11px; padding: 2px 6px; }
       .section-desc{ font-size: 12px; }
       #riepilogo-partite .pie-wrap{ height:260px; }
     }
@@ -176,9 +188,9 @@
   <main class="container">
     <!-- PARTITE (include il grafico a torta) -->
     <section class="card" id="partite" role="tabpanel" aria-labelledby="btnPartite">
+
       <!-- RIEPILOGO: Pie Flamengo vs Celtic (solo in Partite) -->
       <section id="riepilogo-partite" aria-label="Riepilogo vittorie">
-        <h3 style="margin:0 0 8px">Riepilogo vittorie</h3>
         <div class="pie-wrap">
           <canvas id="pieVittorie" aria-label="Grafico a torta vittorie Flamengo e Celtic"></canvas>
         </div>
@@ -190,8 +202,8 @@
           <thead>
             <tr>
               <th class="nowrap">Data</th>
-              <th>Rossi</th>
-              <th>Verdi</th>
+              <th>Flamengo</th>
+              <th>Celtic</th>
               <th>Risultato</th>
               <th>Note</th>
             </tr>
@@ -215,13 +227,41 @@
         <table style="margin-top:12px">
           <thead>
             <tr>
-              <th>Giocatore</th>
-              <th class="nowrap">Punti</th>
-              <th class="nowrap">P</th>
-              <th class="nowrap">V</th>
-              <th class="nowrap">N</th>
-              <th class="nowrap">S</th>
-              <th class="nowrap">Media</th>
+              <th>
+                <button class="sort-btn" data-key="giocatore" aria-label="Ordina per giocatore">
+                  Giocatore <span class="arrow"></span>
+                </button>
+              </th>
+              <th class="nowrap">
+                <button class="sort-btn" data-key="punti" aria-label="Ordina per punti">
+                  Punti <span class="arrow"></span>
+                </button>
+              </th>
+              <th class="nowrap">
+                <button class="sort-btn" data-key="P" aria-label="Ordina per partite">
+                  P <span class="arrow"></span>
+                </button>
+              </th>
+              <th class="nowrap">
+                <button class="sort-btn" data-key="V" aria-label="Ordina per vittorie">
+                  V <span class="arrow"></span>
+                </button>
+              </th>
+              <th class="nowrap">
+                <button class="sort-btn" data-key="N" aria-label="Ordina per pareggi">
+                  N <span class="arrow"></span>
+                </button>
+              </th>
+              <th class="nowrap">
+                <button class="sort-btn" data-key="S" aria-label="Ordina per sconfitte">
+                  S <span class="arrow"></span>
+                </button>
+              </th>
+              <th class="nowrap">
+                <button class="sort-btn" data-key="media" aria-label="Ordina per media punti">
+                  Media <span class="arrow"></span>
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody id="tbody-classifica"></tbody>
@@ -232,7 +272,7 @@
 
   <script>
     /* ========== DATA iniettati dal build Python ========== */
-    const DATA = {"matches": [{"data": "2025-09-08", "gol_rossi": 5, "gol_verdi": 8, "giocatori_rossi": ["Edoardo", "Massimo", "Luca", "Emilio", "Marco Broker", "*Pierpaolo", "Andrea", "Alberto"], "giocatori_verdi": ["Aldo", "*Marco G.", "Gerry", "Messi", "Marco cugino", "Fabio", "Andrea Suola", "Vincenzo"], "note": "Partita 1"}, {"data": "2025-09-15", "gol_rossi": 10, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Massimo", "Luca", "Davide", "*Pierpaolo", "Marco cugino", "Vincenzo", "Gerry"], "giocatori_verdi": ["Aldo", "*Marco G.", "Messi", "Marco Broker", "Emilio", "Andrea", "Lorenzo", "Alberto"], "note": "Partita 2"}, {"data": "2025-09-22", "gol_rossi": 0, "gol_verdi": 6, "giocatori_rossi": ["Pierpaolo", "Luca", "Messi", "Davide", "Sandro", "Raffaele", "*Lorenzo", "Vincenzo", "Olindo"], "giocatori_verdi": ["Edoardo", "Marco G.", "Marco Broker", "Emilio", "Andrea", "Massimo", "Alberto", "Gerry", "*Andrea Suola"], "note": "Partita 3"}, {"data": "2025-09-29", "gol_rossi": 6, "gol_verdi": 8, "giocatori_rossi": ["Aldo", "Luca", "Marco Broker", "Emilio", "Raffaele", "*Lorenzo", "Vincenzo", "Olindo"], "giocatori_verdi": ["Edoardo", "Andrea terzino", "Davide", "Andrea", "Massimo", "Alberto", "Gerry", "*Andrea Suola"], "note": "Partita 4"}, {"data": "2025-10-06", "gol_rossi": 6, "gol_verdi": 1, "giocatori_rossi": ["Massimo", "Marco Broker", "Emilio", "Davide", "Andrea Suola", "Andrea terzino", "*Vincenzo", "Alberto"], "giocatori_verdi": ["Dimitri", "*Andrea", "Luca", "Messi", "Olindo", "Lorenzo", "Raffaele", "Gerry"], "note": "Partita 5"}, {"data": "2025-10-13", "gol_rossi": 1, "gol_verdi": 6, "giocatori_rossi": ["Dimitri", "*Luca", "Emilio", "Marco Broker", "Andrea", "Andrea terzino", "Olindo", "Alberto"], "giocatori_verdi": ["Edoardo", "*Messi", "Gerry", "Massimo", "Pierpaolo", "Andrea Suola", "Marco G.", "Peppe"], "note": "Partita 6"}, {"data": "2025-10-20", "gol_rossi": 7, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Raffaele", "Marco G.", "Luca", "Olindo", "Andrea terzino", "*Vincenzo", "Alberto"], "giocatori_verdi": ["Otello", "Massimo", "Marco Broker", "Emilio", "*Andrea", "Lorenzo amico Andrea", "Andrea Suola", "Gerry"], "note": "Partita 7"}, {"data": "2025-10-27", "gol_rossi": 7, "gol_verdi": 1, "giocatori_rossi": ["Edoardo", "*Luca", "Sandro", "Massimo", "Marco G.", "Vincenzo", "Lorenzo", "Peppe"], "giocatori_verdi": ["Otello", "*Messi", "Gerry", "Emilio", "Marco Broker", "Andrea Suola", "Andrea", "Alberto"], "note": "Partita 8"}, {"data": "2025-11-03", "gol_rossi": 4, "gol_verdi": 6, "giocatori_rossi": ["Otello", "Luca", "*Marco Broker", "Aldo", "Francesco (andrea)", "Vincenzo", "Lorenzo", "Gerry"], "giocatori_verdi": ["Edoardo", "Emilio", "*Raffaele", "Massimo", "Andrea terzino", "Andrea Suola", "Andrea", "Olindo"], "note": "Partita 9"}, {"data": "2025-11-10", "gol_rossi": 8, "gol_verdi": 5, "giocatori_rossi": ["Marco G.", "*Marco Broker", "Emilio", "Massimo", "Andrea", "Andrea terzino", "Alberto", "Cristiano (amico Luca)"], "giocatori_verdi": ["Otello", "*Raffaele", "Gerry", "Luca", "Peppe", "Luca (amico Peppe)", "Vincenzo", "Olindo"], "note": "Partita 10"}, {"data": "2025-11-17", "gol_rossi": 4, "gol_verdi": 4, "giocatori_rossi": ["Alessio portiere", "Emilio", "Raffaele", "Andrea", "Andrea terzino", "Cristiano (amico Luca)", "*Gerry", "Olindo"], "giocatori_verdi": ["Edoardo", "*Massimo", "Luca", "Davide meccanico", "Marco Broker", "Marco G.", "Lorenzo", "Alberto"], "note": "Partita 11"}, {"data": "2025-12-01", "gol_rossi": 3, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Marco G.", "*Sandro", "Massimo", "Andrea Suola", "Vincenzo", "Peppe", "Luca"], "giocatori_verdi": ["Sorin", "Raffaele", "*Emilio", "Marco Broker", "Alberto", "Messi", "Andrea", "Cristiano"], "note": "Partita 12"}, {"data": "2025-12-09", "gol_rossi": 3, "gol_verdi": 4, "giocatori_rossi": ["Otello", "Raffaele", "Davide meccanico", "Massimo", "Vincenzo", "*Peppe", "Luca", "Pierpaolo"], "giocatori_verdi": ["Sorin", "Emilio", "Marco Broker", "*Alberto", "Messi", "Fabio", "Andrea", "Andrea Suola"], "note": "Partita 13"}, {"data": "2025-12-15", "gol_rossi": 8, "gol_verdi": 6, "giocatori_rossi": ["*Edoardo", "Raffaele", "Emilio", "Cristiano", "Andrea Suola", "Vincenzo", "Peppe"], "giocatori_verdi": ["*Sorin", "Massimo", "Marco Broker", "Andrea terzino", "Bogdan", "Luca di Peppe", "Francesco di Suola"], "note": "Partita 14"}, {"data": "2025-12-22", "gol_rossi": 0, "gol_verdi": 0, "giocatori_rossi": ["Edoardo", "Massimo", "Davide meccanico", "Antonio (Davide Meccanico)", "Andrea terzino", "Luca", "Alberto", "Peppe"], "giocatori_verdi": ["Otello", "Gerry", "figlio di Gerry", "Vincenzo", "Figlio di Vincenzo", "Andrea Suola", "Francesco di Suola", "Luca Suola"], "note": "Partita 15"}, {"data": "2026-01-12", "gol_rossi": 4, "gol_verdi": 2, "giocatori_rossi": ["*Sorin", "Gerry", "Davide Meccanico", "Giordano Suola", "Luca Suola", "Andrea Suola", "Vincenzo", "Alberto"], "giocatori_verdi": ["*Edoardo", "Massimo", "Emilio", "Andrea terzino", "Luca", "Cristiano", "Massimiliano di Cristiano", "Marco Davide Meccancio"], "note": "Partita 16"}, {"data": "2026-01-19", "gol_rossi": 9, "gol_verdi": 4, "giocatori_rossi": ["Sorin", "*Massimo", "Luca Suola", "Andrea terzino", "Andrea Suola", "Vincenzo", "Francesco Suola"], "giocatori_verdi": ["Edoardo", "Emilio", "Aldo", "Alberto", "*Gerry", "Bogdan", "Marco Broker"], "note": "Partita 17"}, {"data": "2026-01-26", "gol_rossi": 4, "gol_verdi": 4, "giocatori_rossi": ["Edoardo", "Emilio", "Luca Suola", "Massimo", "Bodgan", "*Luca", "Cristiano", "Alberto"], "giocatori_verdi": ["Sorin", "*Andrea Suola", "Andrea terzino", "Gerry", "Aldo", "Davide Meccanico", "Marco Luca", "Andrea"], "note": "Partita 18 - flamengo vs celtic"}], "table": [{"giocatore": "Massimo", "punti": 26, "P": 16, "V": 8, "N": 2, "S": 6}, {"giocatore": "Andrea Suola", "punti": 25, "P": 12, "V": 8, "N": 1, "S": 3}, {"giocatore": "Alberto", "punti": 24, "P": 15, "V": 7, "N": 3, "S": 5}, {"giocatore": "Edoardo", "punti": 24, "P": 13, "V": 7, "N": 3, "S": 3}, {"giocatore": "Andrea terzino", "punti": 21, "P": 12, "V": 6, "N": 3, "S": 3}, {"giocatore": "Andrea", "punti": 20, "P": 12, "V": 6, "N": 2, "S": 4}, {"giocatore": "Emilio", "punti": 20, "P": 16, "V": 6, "N": 2, "S": 8}, {"giocatore": "Gerry", "punti": 20, "P": 13, "V": 6, "N": 2, "S": 5}, {"giocatore": "Vincenzo", "punti": 19, "P": 13, "V": 6, "N": 1, "S": 6}, {"giocatore": "Marco G.", "punti": 16, "P": 7, "V": 5, "N": 1, "S": 1}, {"giocatore": "Marco Broker", "punti": 13, "P": 13, "V": 4, "N": 1, "S": 8}, {"giocatore": "Peppe", "punti": 10, "P": 6, "V": 3, "N": 1, "S": 2}, {"giocatore": "Raffaele", "punti": 10, "P": 8, "V": 3, "N": 1, "S": 4}, {"giocatore": "Sorin", "punti": 10, "P": 4, "V": 3, "N": 1, "S": 0}, {"giocatore": "Davide", "punti": 9, "P": 4, "V": 3, "N": 0, "S": 1}, {"giocatore": "Messi", "punti": 9, "P": 6, "V": 3, "N": 0, "S": 3}, {"giocatore": "Luca", "punti": 8, "P": 13, "V": 2, "N": 2, "S": 9}, {"giocatore": "Luca Suola", "punti": 8, "P": 4, "V": 2, "N": 2, "S": 0}, {"giocatore": "*Andrea Suola", "punti": 7, "P": 3, "V": 2, "N": 1, "S": 0}, {"giocatore": "Cristiano", "punti": 7, "P": 4, "V": 2, "N": 1, "S": 1}, {"giocatore": "Olindo", "punti": 7, "P": 8, "V": 2, "N": 1, "S": 5}, {"giocatore": "*Vincenzo", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "Fabio", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "Marco cugino", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "*Luca", "punti": 4, "P": 3, "V": 1, "N": 1, "S": 1}, {"giocatore": "*Massimo", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Aldo", "punti": 4, "P": 6, "V": 1, "N": 1, "S": 4}, {"giocatore": "Cristiano (amico Luca)", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Davide Meccanico", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Lorenzo", "punti": 4, "P": 5, "V": 1, "N": 1, "S": 3}, {"giocatore": "*Alberto", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "*Edoardo", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Emilio", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "*Marco Broker", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Marco G.", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Messi", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Pierpaolo", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Raffaele", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Sorin", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "Francesco Suola", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Giordano Suola", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Pierpaolo", "punti": 3, "P": 3, "V": 1, "N": 0, "S": 2}, {"giocatore": "Sandro", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "Davide meccanico", "punti": 2, "P": 3, "V": 0, "N": 2, "S": 1}, {"giocatore": "*Gerry", "punti": 1, "P": 2, "V": 0, "N": 1, "S": 1}, {"giocatore": "Alessio portiere", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Antonio (Davide Meccanico)", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Bodgan", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "figlio di Gerry", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Figlio di Vincenzo", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Francesco di Suola", "punti": 1, "P": 2, "V": 0, "N": 1, "S": 1}, {"giocatore": "Marco Luca", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Otello", "punti": 1, "P": 6, "V": 0, "N": 1, "S": 5}]};
+    const DATA = {"matches": [{"data": "2025-09-08", "gol_flamengo": 5, "gol_celtic": 8, "giocatori_flamengo": ["Edoardo", "Massimo", "Luca", "Emilio", "Marco Broker", "*Pierpaolo", "Andrea", "Alberto"], "giocatori_celtic": ["Aldo", "*Marco G.", "Gerry", "Messi", "Marco cugino", "Fabio", "Andrea Suola", "Vincenzo"], "note": "Partita 1"}, {"data": "2025-09-15", "gol_flamengo": 10, "gol_celtic": 4, "giocatori_flamengo": ["Edoardo", "Massimo", "Luca", "Davide", "*Pierpaolo", "Marco cugino", "Vincenzo", "Gerry"], "giocatori_celtic": ["Aldo", "*Marco G.", "Messi", "Marco Broker", "Emilio", "Andrea", "Lorenzo", "Alberto"], "note": "Partita 2"}, {"data": "2025-09-22", "gol_flamengo": 0, "gol_celtic": 6, "giocatori_flamengo": ["Pierpaolo", "Luca", "Messi", "Davide", "Sandro", "Raffaele", "*Lorenzo", "Vincenzo", "Olindo"], "giocatori_celtic": ["Edoardo", "Marco G.", "Marco Broker", "Emilio", "Andrea", "Massimo", "Alberto", "Gerry", "*Andrea Suola"], "note": "Partita 3"}, {"data": "2025-09-29", "gol_flamengo": 6, "gol_celtic": 8, "giocatori_flamengo": ["Aldo", "Luca", "Marco Broker", "Emilio", "Raffaele", "*Lorenzo", "Vincenzo", "Olindo"], "giocatori_celtic": ["Edoardo", "Andrea terzino", "Davide", "Andrea", "Massimo", "Alberto", "Gerry", "*Andrea Suola"], "note": "Partita 4"}, {"data": "2025-10-06", "gol_flamengo": 6, "gol_celtic": 1, "giocatori_flamengo": ["Massimo", "Marco Broker", "Emilio", "Davide", "Andrea Suola", "Andrea terzino", "*Vincenzo", "Alberto"], "giocatori_celtic": ["Dimitri", "*Andrea", "Luca", "Messi", "Olindo", "Lorenzo", "Raffaele", "Gerry"], "note": "Partita 5"}, {"data": "2025-10-13", "gol_flamengo": 1, "gol_celtic": 6, "giocatori_flamengo": ["Dimitri", "*Luca", "Emilio", "Marco Broker", "Andrea", "Andrea terzino", "Olindo", "Alberto"], "giocatori_celtic": ["Edoardo", "*Messi", "Gerry", "Massimo", "Pierpaolo", "Andrea Suola", "Marco G.", "Peppe"], "note": "Partita 6"}, {"data": "2025-10-20", "gol_flamengo": 7, "gol_celtic": 4, "giocatori_flamengo": ["Edoardo", "Raffaele", "Marco G.", "Luca", "Olindo", "Andrea terzino", "*Vincenzo", "Alberto"], "giocatori_celtic": ["Otello", "Massimo", "Marco Broker", "Emilio", "*Andrea", "Lorenzo amico Andrea", "Andrea Suola", "Gerry"], "note": "Partita 7"}, {"data": "2025-10-27", "gol_flamengo": 7, "gol_celtic": 1, "giocatori_flamengo": ["Edoardo", "*Luca", "Sandro", "Massimo", "Marco G.", "Vincenzo", "Lorenzo", "Peppe"], "giocatori_celtic": ["Otello", "*Messi", "Gerry", "Emilio", "Marco Broker", "Andrea Suola", "Andrea", "Alberto"], "note": "Partita 8"}, {"data": "2025-11-03", "gol_flamengo": 4, "gol_celtic": 6, "giocatori_flamengo": ["Otello", "Luca", "*Marco Broker", "Aldo", "Francesco (andrea)", "Vincenzo", "Lorenzo", "Gerry"], "giocatori_celtic": ["Edoardo", "Emilio", "*Raffaele", "Massimo", "Andrea terzino", "Andrea Suola", "Andrea", "Olindo"], "note": "Partita 9"}, {"data": "2025-11-10", "gol_flamengo": 8, "gol_celtic": 5, "giocatori_flamengo": ["Marco G.", "*Marco Broker", "Emilio", "Massimo", "Andrea", "Andrea terzino", "Alberto", "Cristiano (amico Luca)"], "giocatori_celtic": ["Otello", "*Raffaele", "Gerry", "Luca", "Peppe", "Luca (amico Peppe)", "Vincenzo", "Olindo"], "note": "Partita 10"}, {"data": "2025-11-17", "gol_flamengo": 4, "gol_celtic": 4, "giocatori_flamengo": ["Alessio portiere", "Emilio", "Raffaele", "Andrea", "Andrea terzino", "Cristiano (amico Luca)", "*Gerry", "Olindo"], "giocatori_celtic": ["Edoardo", "*Massimo", "Luca", "Davide meccanico", "Marco Broker", "Marco G.", "Lorenzo", "Alberto"], "note": "Partita 11"}, {"data": "2025-12-01", "gol_flamengo": 3, "gol_celtic": 4, "giocatori_flamengo": ["Edoardo", "Marco G.", "*Sandro", "Massimo", "Andrea Suola", "Vincenzo", "Peppe", "Luca"], "giocatori_celtic": ["Sorin", "Raffaele", "*Emilio", "Marco Broker", "Alberto", "Messi", "Andrea", "Cristiano"], "note": "Partita 12"}, {"data": "2025-12-09", "gol_flamengo": 3, "gol_celtic": 4, "giocatori_flamengo": ["Otello", "Raffaele", "Davide meccanico", "Massimo", "Vincenzo", "*Peppe", "Luca", "Pierpaolo"], "giocatori_celtic": ["Sorin", "Emilio", "Marco Broker", "*Alberto", "Messi", "Fabio", "Andrea", "Andrea Suola"], "note": "Partita 13"}, {"data": "2025-12-15", "gol_flamengo": 8, "gol_celtic": 6, "giocatori_flamengo": ["*Edoardo", "Raffaele", "Emilio", "Cristiano", "Andrea Suola", "Vincenzo", "Peppe"], "giocatori_celtic": ["*Sorin", "Massimo", "Marco Broker", "Andrea terzino", "Bogdan", "Luca di Peppe", "Francesco di Suola"], "note": "Partita 14"}, {"data": "2025-12-22", "gol_flamengo": 0, "gol_celtic": 0, "giocatori_flamengo": ["Edoardo", "Massimo", "Davide meccanico", "Antonio (Davide Meccanico)", "Andrea terzino", "Luca", "Alberto", "Peppe"], "giocatori_celtic": ["Otello", "Gerry", "figlio di Gerry", "Vincenzo", "Figlio di Vincenzo", "Andrea Suola", "Francesco di Suola", "Luca Suola"], "note": "Partita 15"}, {"data": "2026-01-12", "gol_flamengo": 4, "gol_celtic": 2, "giocatori_flamengo": ["*Sorin", "Gerry", "Davide Meccanico", "Giordano Suola", "Luca Suola", "Andrea Suola", "Vincenzo", "Alberto"], "giocatori_celtic": ["*Edoardo", "Massimo", "Emilio", "Andrea terzino", "Luca", "Cristiano", "Massimiliano di Cristiano", "Marco Davide Meccancio"], "note": "Partita 16"}, {"data": "2026-01-19", "gol_flamengo": 9, "gol_celtic": 4, "giocatori_flamengo": ["Sorin", "*Massimo", "Luca Suola", "Andrea terzino", "Andrea Suola", "Vincenzo", "Francesco Suola"], "giocatori_celtic": ["Edoardo", "Emilio", "Aldo", "Alberto", "*Gerry", "Bogdan", "Marco Broker"], "note": "Partita 17"}, {"data": "2026-01-26", "gol_flamengo": 4, "gol_celtic": 4, "giocatori_flamengo": ["Edoardo", "Emilio", "Luca Suola", "Massimo", "Bodgan", "*Luca", "Cristiano", "Alberto"], "giocatori_celtic": ["Sorin", "*Andrea Suola", "Andrea terzino", "Gerry", "Aldo", "Davide Meccanico", "Marco Luca", "Andrea"], "note": "Partita 18"}], "table": [{"giocatore": "Massimo", "punti": 26, "P": 16, "V": 8, "N": 2, "S": 6}, {"giocatore": "Andrea Suola", "punti": 25, "P": 12, "V": 8, "N": 1, "S": 3}, {"giocatore": "Alberto", "punti": 24, "P": 15, "V": 7, "N": 3, "S": 5}, {"giocatore": "Edoardo", "punti": 24, "P": 13, "V": 7, "N": 3, "S": 3}, {"giocatore": "Andrea terzino", "punti": 21, "P": 12, "V": 6, "N": 3, "S": 3}, {"giocatore": "Andrea", "punti": 20, "P": 12, "V": 6, "N": 2, "S": 4}, {"giocatore": "Emilio", "punti": 20, "P": 16, "V": 6, "N": 2, "S": 8}, {"giocatore": "Gerry", "punti": 20, "P": 13, "V": 6, "N": 2, "S": 5}, {"giocatore": "Vincenzo", "punti": 19, "P": 13, "V": 6, "N": 1, "S": 6}, {"giocatore": "Marco G.", "punti": 16, "P": 7, "V": 5, "N": 1, "S": 1}, {"giocatore": "Marco Broker", "punti": 13, "P": 13, "V": 4, "N": 1, "S": 8}, {"giocatore": "Peppe", "punti": 10, "P": 6, "V": 3, "N": 1, "S": 2}, {"giocatore": "Raffaele", "punti": 10, "P": 8, "V": 3, "N": 1, "S": 4}, {"giocatore": "Sorin", "punti": 10, "P": 4, "V": 3, "N": 1, "S": 0}, {"giocatore": "Davide", "punti": 9, "P": 4, "V": 3, "N": 0, "S": 1}, {"giocatore": "Messi", "punti": 9, "P": 6, "V": 3, "N": 0, "S": 3}, {"giocatore": "Luca", "punti": 8, "P": 13, "V": 2, "N": 2, "S": 9}, {"giocatore": "Luca Suola", "punti": 8, "P": 4, "V": 2, "N": 2, "S": 0}, {"giocatore": "*Andrea Suola", "punti": 7, "P": 3, "V": 2, "N": 1, "S": 0}, {"giocatore": "Cristiano", "punti": 7, "P": 4, "V": 2, "N": 1, "S": 1}, {"giocatore": "Olindo", "punti": 7, "P": 8, "V": 2, "N": 1, "S": 5}, {"giocatore": "*Vincenzo", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "Fabio", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "Marco cugino", "punti": 6, "P": 2, "V": 2, "N": 0, "S": 0}, {"giocatore": "*Luca", "punti": 4, "P": 3, "V": 1, "N": 1, "S": 1}, {"giocatore": "*Massimo", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Aldo", "punti": 4, "P": 6, "V": 1, "N": 1, "S": 4}, {"giocatore": "Cristiano (amico Luca)", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Davide Meccanico", "punti": 4, "P": 2, "V": 1, "N": 1, "S": 0}, {"giocatore": "Lorenzo", "punti": 4, "P": 5, "V": 1, "N": 1, "S": 3}, {"giocatore": "*Alberto", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "*Edoardo", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Emilio", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "*Marco Broker", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Marco G.", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Messi", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Pierpaolo", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Raffaele", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "*Sorin", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "Francesco Suola", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Giordano Suola", "punti": 3, "P": 1, "V": 1, "N": 0, "S": 0}, {"giocatore": "Pierpaolo", "punti": 3, "P": 3, "V": 1, "N": 0, "S": 2}, {"giocatore": "Sandro", "punti": 3, "P": 2, "V": 1, "N": 0, "S": 1}, {"giocatore": "Davide meccanico", "punti": 2, "P": 3, "V": 0, "N": 2, "S": 1}, {"giocatore": "*Gerry", "punti": 1, "P": 2, "V": 0, "N": 1, "S": 1}, {"giocatore": "Alessio portiere", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Antonio (Davide Meccanico)", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Bodgan", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "figlio di Gerry", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Figlio di Vincenzo", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Francesco di Suola", "punti": 1, "P": 2, "V": 0, "N": 1, "S": 1}, {"giocatore": "Marco Luca", "punti": 1, "P": 1, "V": 0, "N": 1, "S": 0}, {"giocatore": "Otello", "punti": 1, "P": 6, "V": 0, "N": 1, "S": 5}]};
 
     /* ========== utilità DOM ========== */
     function el(tag, attrs={}, children=[]){
@@ -246,7 +286,7 @@
       return e;
     }
 
-    /* Etichette su 2 righe (spezzate al primo spazio) per leggibilità */
+    /* Etichette su 2 righe (spezzate al primo spazio) per leggibilità nel grafico */
     function wrapLabel(name){
       if(!name) return name;
       const s = String(name);
@@ -269,14 +309,14 @@
     }
 
     /* Lista giocatori inline con badge capitano per team */
-    function playersFragment(list, team /* 'rossi' | 'verdi' */){
+    function playersFragment(list, team /* 'flamengo' | 'celtic' */){
       const container = document.createElement('span');
       container.className = 'players-list';
       (list || []).forEach(raw => {
         const { name, isCaptain } = normalizePlayer(raw);
 
         const chip = document.createElement('span');
-        chip.className = 'player-chip' + (isCaptain ? (team === 'rossi' ? ' captain-rossi' : ' captain-verdi') : '');
+        chip.className = 'player-chip' + (isCaptain ? (team === 'flamengo' ? ' captain-flamengo' : ' captain-celtic') : '');
 
         const nameSpan = document.createElement('span');
         nameSpan.className = 'name';
@@ -310,8 +350,75 @@
         cur.S     += Number(r.S)     || 0;
         map.set(key, cur);
       });
-      // Ordina per punti desc poi nome asc
-      return Array.from(map.values()).sort((a,b)=> (b.punti - a.punti) || a.giocatore.localeCompare(b.giocatore));
+      return Array.from(map.values());
+    }
+
+    /* ========== Ordinamento CLASSIFICA ========== */
+    let TABLE = aggregateTable(DATA.table);
+    let currentSort = { key: 'punti', dir: 'desc' }; // default: per punti, discendente
+
+    function computeMedia(row){
+      const P = Number(row.P) || 0;
+      const punti = Number(row.punti) || 0;
+      return P > 0 ? (punti / P) : 0;
+    }
+
+    function sortTable(data, key, dir){
+      const mult = dir === 'asc' ? 1 : -1;
+      return [...data].sort((a,b)=>{
+        let av, bv;
+        if(key === 'media'){ av = computeMedia(a); bv = computeMedia(b); }
+        else if(key === 'giocatore'){ av = String(a.giocatore); bv = String(b.giocatore); }
+        else { av = Number(a[key]) || 0; bv = Number(b[key]) || 0; }
+
+        if (key === 'giocatore'){
+          return av.localeCompare(bv) * mult;
+        }
+        if (av < bv) return -1 * mult;
+        if (av > bv) return  1 * mult;
+        // tie-break: punti desc, poi nome asc
+        const t1 = (Number(a.punti)||0) - (Number(b.punti)||0);
+        if (t1 !== 0) return (t1 < 0 ? -1 : 1) * -1; // punti desc
+        return String(a.giocatore).localeCompare(String(b.giocatore));
+      });
+    }
+
+    function applySortAndRender(){
+      const sorted = sortTable(TABLE, currentSort.key, currentSort.dir);
+      renderClassifica(sorted);
+      renderChart(sorted);
+      // Aggiorna UI header
+      updateSortHeaderUI(currentSort.key, currentSort.dir);
+    }
+
+    function updateSortHeaderUI(key, dir){
+      const ths = document.querySelectorAll('#classifica thead th');
+      ths.forEach(th => th.classList.remove('active-sort'));
+      const btns = document.querySelectorAll('#classifica thead .sort-btn');
+      btns.forEach(btn => {
+        btn.classList.remove('sort-asc','sort-desc');
+        if (btn.dataset.key === key){
+          btn.classList.add(dir === 'asc' ? 'sort-asc' : 'sort-desc');
+          btn.closest('th')?.classList.add('active-sort');
+        }
+      });
+    }
+
+    function bindSortHandlers(){
+      const btns = document.querySelectorAll('#classifica thead .sort-btn');
+      btns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.key;
+          if (currentSort.key === key){
+            currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+          } else {
+            currentSort.key = key;
+            // default: desc su metriche numeriche, asc su nome
+            currentSort.dir = (key === 'giocatore') ? 'asc' : 'desc';
+          }
+          applySortAndRender();
+        });
+      });
     }
 
     /* ========== PARTITE (tabella) ========== */
@@ -319,37 +426,37 @@
       const tbody = document.getElementById('tbody-partite');
       tbody.innerHTML = '';
       (matches || []).forEach(m => {
-        const r = Number(m.gol_rossi) || 0;
-        const v = Number(m.gol_verdi) || 0;
+        const r = Number(m.gol_flamengo) || 0;
+        const v = Number(m.gol_celtic) || 0;
         const res = `${r} - ${v}`;
-        const winnerTeam = r > v ? 'rossi' : (v > r ? 'verdi' : null);
+        const winnerTeam = r > v ? 'flamengo' : (v > r ? 'celtic' : null);
 
-        // Rossi
-        const tdRossi = el('td',{class:'wrap-words'});
-        const badgeRossi = el(
+        // Flamengo
+        const tdFlamengo = el('td',{class:'wrap-words'});
+        const badgeFlamengo = el(
           'div',
-          { class: 'badge-rossi' + (winnerTeam==='rossi' ? ' winner' : '') },
-          [document.createTextNode('Rossi')]
+          { class: 'badge-flamengo' + (winnerTeam==='flamengo' ? ' winner' : '') },
+          [document.createTextNode('Flamengo')]
         );
-        tdRossi.appendChild(badgeRossi);
-        tdRossi.appendChild(document.createElement('br'));
-        tdRossi.appendChild(playersFragment(m.giocatori_rossi || [], 'rossi'));
+        tdFlamengo.appendChild(badgeFlamengo);
+        tdFlamengo.appendChild(document.createElement('br'));
+        tdFlamengo.appendChild(playersFragment(m.giocatori_flamengo || [], 'flamengo'));
 
-        // Verdi
-        const tdVerdi = el('td',{class:'wrap-words'});
-        const badgeVerdi = el(
+        // Celtic
+        const tdCeltic = el('td',{class:'wrap-words'});
+        const badgeCeltic = el(
           'div',
-          { class: 'badge-verdi' + (winnerTeam==='verdi' ? ' winner' : '') },
-          [document.createTextNode('Verdi')]
+          { class: 'badge-celtic' + (winnerTeam==='celtic' ? ' winner' : '') },
+          [document.createTextNode('Celtic')]
         );
-        tdVerdi.appendChild(badgeVerdi);
-        tdVerdi.appendChild(document.createElement('br'));
-        tdVerdi.appendChild(playersFragment(m.giocatori_verdi || [], 'verdi'));
+        tdCeltic.appendChild(badgeCeltic);
+        tdCeltic.appendChild(document.createElement('br'));
+        tdCeltic.appendChild(playersFragment(m.giocatori_celtic || [], 'celtic'));
 
         const tr = el('tr',{},[
           el('td',{class:'nowrap'},[document.createTextNode(m.data)]),
-          tdRossi,
-          tdVerdi,
+          tdFlamengo,
+          tdCeltic,
           el('td',{html:`<strong>${res}</strong>`}),
           el('td',{class:'note'},[document.createTextNode(m.note || '')]),
         ]);
@@ -402,7 +509,7 @@
 
     /* ========== GRAFICO CLASSIFICA (scorribile) ========== */
     function renderChart(table){
-      const labels = (table || []).map(r => r.giocatore);         // già normalizzati (senza *)
+      const labels = (table || []).map(r => r.giocatore); // già normalizzati
       const points = (table || []).map(r => r.punti);
       const wrap = document.getElementById('chartWrap');
       const canvas = document.getElementById('chart');
@@ -421,10 +528,10 @@
       const leaders = points.reduce((acc, p, i) => { if (p === maxPts) acc.push(i); return acc; }, []);
       const GOLD_BG = 'rgba(255,215,0,0.85)';
       const GOLD_BR = 'rgba(255,215,0,1)';
-      const GREEN_BG = 'rgba(184,127,94,0.6)';
-      const GREEN_BR = 'rgba(184,127,94,1)';
-      const bg = points.map(p => p === maxPts ? GOLD_BG : GREEN_BG);
-      const br = points.map(p => p === maxPts ? GOLD_BR : GREEN_BR);
+      const BROWN_BG = 'rgba(184,127,94,0.6)';
+      const BROWN_BR = 'rgba(184,127,94,1)';
+      const bg = points.map(p => p === maxPts ? GOLD_BG : BROWN_BG);
+      const br = points.map(p => p === maxPts ? GOLD_BR : BROWN_BR);
 
       if (window.__rvvChart) { window.__rvvChart.destroy(); }
 
@@ -475,8 +582,8 @@
     function countWins(matches){
       let flamengoWins = 0, celticWins = 0;
       (matches || []).forEach(m => {
-        const r = Number(m.gol_rossi) || 0;
-        const v = Number(m.gol_verdi) || 0;
+        const r = Number(m.gol_flamengo) || 0;
+        const v = Number(m.gol_celtic) || 0;
         if (r > v) flamengoWins++;
         else if (v > r) celticWins++;
       });
@@ -518,12 +625,13 @@
     }
 
     /* ========== INIT ========== */
-    // Aggrega la classifica su nomi normalizzati (unifica *Nome e Nome)
-    const TABLE = aggregateTable(DATA.table);
-
     renderPartite(DATA.matches);
+    // Render iniziale classifica per punti desc
+    TABLE = sortTable(TABLE, currentSort.key, currentSort.dir);
     renderClassifica(TABLE);
     renderChart(TABLE);
+    bindSortHandlers();
+    updateSortHeaderUI(currentSort.key, currentSort.dir);
     // Non creiamo il pie qui (vista iniziale "classifica")
 
     // Toggle viste (Modalità B: pie solo in Partite)
