@@ -41,7 +41,7 @@
     .badge-flamengo{ color:#fecaca; background:#7f1d1d; }
     .badge-celtic{ color:#dcfce7; background:#064e3b; }
 
-    /* Enfasi vincitore: più lungo (padding orizzontale maggiore), bold, bordo/alone */
+    /* Enfasi vincitore */
     .badge-flamengo.winner{
       font-weight:800; padding:4px 80px;
       border-color:#ef4444; box-shadow:0 0 0 2px #ef4444 inset, 0 0 6px rgba(239,68,68,0.35);
@@ -51,7 +51,7 @@
       border-color:#22c55e; box-shadow:0 0 0 2px #22c55e inset, 0 0 6px rgba(34,197,94,0.30);
     }
 
-    /* Liste giocatori: la virgola resta neutra (non colorata, non bold) */
+    /* Liste giocatori: la virgola resta neutra */
     .players-list{ display:inline; }
     .players-list .player-chip{ display:inline; }
     .players-list .player-chip:not(:first-child)::before{
@@ -59,15 +59,10 @@
       color: var(--text);
       font-weight: 400;
     }
-
-    /* Nome base; il capitano sovrascrive questi valori con le classi dedicate */
     .player-chip .name{ font-weight:400; color: var(--text); }
-
-    /* Capitani per squadra (solo il nome, non la virgola) */
     .captain-flamengo .name{ color: var(--captain-red); font-weight:700; }
     .captain-celtic .name{ color: var(--captain-green); font-weight:700; }
 
-    /* Badge "C" accanto al nome del capitano (stesso colore del team) */
     .badge-c{
       display:inline-block;
       margin-left:6px;
@@ -121,7 +116,7 @@
       display:block; width:100% !important; height:100% !important;
     }
 
-    /* Calendario (partite) responsive: tabella dentro wrapper scorrevole */
+    /* Calendario (partite) responsive */
     .table-scroll{
       width:100%; max-width:100%;
       overflow-x:auto; overflow-y:hidden;
@@ -130,7 +125,7 @@
     }
     .table-scroll > table{ min-width:640px; }
 
-    /* Pie (solo in PARTITE) */
+    /* Pie */
     #riepilogo-partite .pie-wrap{
       width:100%;
       max-width:520px;
@@ -227,6 +222,8 @@
         <table style="margin-top:12px">
           <thead>
             <tr>
+              <!-- NUOVA COLONNA: Posizione -->
+              <th class="nowrap">Pos</th>
               <th>
                 <button class="sort-btn" data-key="giocatore" aria-label="Ordina per giocatore">
                   Giocatore <span class="arrow"></span>
@@ -337,7 +334,7 @@
       return container;
     }
 
-    /* ========== Aggrega CLASSIFICA su nomi normalizzati (unifica *Nome e Nome) ========== */
+    /* ========== Aggrega CLASSIFICA su nomi normalizzati ========== */
     function aggregateTable(rawTable){
       const map = new Map();
       (rawTable || []).forEach(r => {
@@ -468,11 +465,13 @@
     function renderClassifica(table){
       const tbody = document.getElementById('tbody-classifica');
       tbody.innerHTML = '';
-      (table || []).forEach(r => {
+      (table || []).forEach((r, idx) => {
         const P = Number(r.P) || 0;
         const punti = Number(r.punti) || 0;
         const media = P > 0 ? (punti / P) : 0;
         const tr = el('tr',{},[
+          /* NUOVA COLONNA POSIZIONE (1-based) */
+          el('td',{},[document.createTextNode(idx + 1)]),
           el('td',{},[document.createTextNode(r.giocatore)]),
           el('td',{},[document.createTextNode(punti)]),
           el('td',{},[document.createTextNode(P)]),
@@ -578,7 +577,7 @@
       });
     }
 
-    /* ========== PIE VITTORIE: Modalità B (crea/distruggi al cambio tab) ========== */
+    /* ========== PIE VITTORIE (crea/distruggi al cambio tab) ========== */
     function countWins(matches){
       let flamengoWins = 0, celticWins = 0;
       (matches || []).forEach(m => {
@@ -666,4 +665,3 @@
   </script>
 </body>
 </html>
-``
